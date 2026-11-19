@@ -1,0 +1,6 @@
+# Namespace distinct de ceux d'Argo CD (TP19) : deux outils GitOps
+# ne doivent jamais gérer les mêmes ressources.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: whoami-flux

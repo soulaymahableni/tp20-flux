@@ -1,0 +1,40 @@
+# Partie 4 : renommer en helm-whoami.yaml (mv), après avoir copié le chart dans charts/whoami/.
+# Flux rend le chart avec Helm : la release est visible avec "helm list" / "helm history".
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: whoami
+  namespace: flux-system
+spec:
+  interval: 1m
+  timeout: 1m                       # délai pour que les Pods soient prêts (sinon échec)
+  releaseName: whoami
+  targetNamespace: whoami-helm
+  storageNamespace: whoami-helm     # Secrets de release Helm dans whoami-helm
+  chart:
+    spec:
+      chart: ./charts/whoami
+      reconcileStrategy: Revision   # nouvelle version du chart à chaque commit
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  install:
+    createNamespace: true
+    remediation:
+      retries: 2
+  # TODO complété : remédiation, rollback après 2 échecs
+  upgrade:
+    remediation:
+      retries: 2
+      strategy: rollback
+      remediateLastFailure: true
+  # TODO complété : valeurs (surcharge du values.yaml du chart)
+  values:
+    replicaCount: 2
+    image:
+      tag: v1.10.1
+    ingress:
+      enabled: false                # pas de conflit avec whoami.lab.local
+    env:
+      WHOAMI_NAME: flux-helm

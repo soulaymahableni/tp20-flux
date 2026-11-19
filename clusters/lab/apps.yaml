@@ -1,0 +1,18 @@
+# Partie 2 : Flux applique ./apps/dev du dépôt (source GitRepository flux-system,
+# créée par le bootstrap) et réconcilie toutes les minutes.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: apps-dev
+  namespace: flux-system
+spec:
+  interval: 1m              # réconciliation (et correction de la dérive) toutes les minutes
+  retryInterval: 30s
+  path: ./apps/dev
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  # TODO complétés :
+  prune: true               # supprime du cluster ce qui est supprimé de Git
+  wait: true                # attend que les ressources soient prêtes (santé)
+  timeout: 2m

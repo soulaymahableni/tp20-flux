@@ -1,0 +1,49 @@
+# Défi : Flux met à jour le tag de apps/dev et commite le changement.
+# Prérequis : bootstrap avec les contrôleurs d'images et une clé en écriture :
+#   flux bootstrap github ... --components-extra=image-reflector-controller,image-automation-controller --read-write-key
+# Le marqueur dans apps/dev/kustomization.yaml : newTag: v1.10.1 # {"$imagepolicy": "flux-system:whoami:tag"}
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: whoami
+  namespace: flux-system
+spec:
+  image: docker.io/traefik/whoami
+  interval: 10m
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: whoami
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: whoami
+  policy:
+    semver:
+      range: ">=1.10.0 <2.0.0"
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageUpdateAutomation
+metadata:
+  name: whoami-dev
+  namespace: flux-system
+spec:
+  interval: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        name: fluxcdbot
+        email: fluxcdbot@users.noreply.github.com
+      messageTemplate: "chore(dev): mise à jour automatique de whoami"
+    push:
+      branch: main
+  update:
+    path: ./apps/dev
+    strategy: Setters
